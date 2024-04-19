@@ -25,7 +25,7 @@ namespace api.examenparcial1.Controllers
                 if (facturaRepository.add(factura))
                     return Ok("Factura agregada correctamente");
                 else
-                    return BadRequest("Error al agregar cliente");
+                    return BadRequest("Error al agregar factura");
             }
             catch (Exception ex)
             {
@@ -41,7 +41,7 @@ namespace api.examenparcial1.Controllers
                 if (facturaRepository.update(factura))
                     return Ok("Factura actualizada correctamente");
                 else
-                    return BadRequest("Error al actualizar cliente");
+                    return BadRequest("Error al actualizar factura");
             }
             catch (Exception ex)
             {
@@ -57,7 +57,7 @@ namespace api.examenparcial1.Controllers
                 if (facturaRepository.remove(id))
                     return Ok("Factura eliminada correctamente");
                 else
-                    return BadRequest("Error al eliminar cliente");
+                    return BadRequest("Error al eliminar factura");
             }
             catch (Exception ex)
             {
