@@ -1,92 +1,83 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Dapper;
-using Npgsql;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Repository.Data
 {
     public class FacturaRepository : IFactura
     {
-        private IDbConnection conexionDB;
-        public FacturaRepository(string _connectionString)
+        private readonly ApplicationDbContext _context;
+
+        public FacturaRepository(ApplicationDbContext context)
         {
-            conexionDB = new DbConnection(_connectionString).dbConnection();
+            _context = context;
         }
-        public bool add(FacturaModel factura)
+
+        public async Task<bool> add(FacturaModel factura)
         {
             try
             {
-                if (conexionDB.Execute("insert into factura(id, id_cliente, nro_factura, fecha_hora, " +
-                    "total, total_iva5, total_iva10, total_iva, total_letras, sucursal) values (@id, @id_cliente, @nro_factura, @fecha_hora, " +
-                    "@total, @total_iva5, @total_iva10, @total_iva, @total_letras, @sucursal)", factura) > 0)
-                    return true;
-                else
-                    return false;
+                await _context.FacturasEF.AddAsync(factura);
+                return await _context.SaveChangesAsync() > 0;
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw new Exception("No se pudo agregar Factura", ex);
             }
         }
 
-        public FacturaModel get(int id)
+        public async Task<bool> update(FacturaModel factura)
         {
             try
             {
-                return conexionDB.Query<FacturaModel>("Select * from factura where id = @id", new { id }).FirstOrDefault();
+                _context.FacturasEF.Update(factura);
+                return await _context.SaveChangesAsync() > 0;
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw new Exception("No se pudo actualizar Factura", ex);
             }
         }
 
-        public IEnumerable<FacturaModel> list()
-            {
-            try
-            {
-                return conexionDB.Query<FacturaModel>("Select * from factura");
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        public bool remove(int id)
+        public async Task<bool> remove(int id)
         {
             try
             {
-                if (conexionDB.Execute("Delete from factura where id = @id", new { id }) > 0)
-                    return true;
-                else
-                    return false;
+                var factura = await _context.FacturasEF.FindAsync(id);
+                if (factura != null)
+                {
+                    _context.FacturasEF.Remove(factura);
+                    return await _context.SaveChangesAsync() > 0;
+                }
+                return false;
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw new Exception("No se pudo eliminar Factura", ex);
+            }
+
+        }
+
+        public async Task<FacturaModel> get(int id)
+        {
+            try
+            {
+                return await _context.FacturasEF.FindAsync(id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("No se pudo obtener Factura", ex);
             }
         }
 
-        public bool update(FacturaModel factura)
+        public async Task<IEnumerable<FacturaModel>> list()
         {
-           try
-           {
-               if (conexionDB.Execute("Update factura set id_cliente = @id_cliente, nro_factura = @nro_factura, fecha_hora = @fecha_hora, " +
-                        "total = @total, total_iva5 = @total_iva5, total_iva10 = @total_iva10, total_iva = @total_iva, total_letras = @total_letras, sucursal = @sucursal" +
-                        " where id = @id", factura) > 0)
-                   return true;
-              else
-                   return false;
-           }
-           catch (Exception ex)
-           {
-               throw ex;
-           }
+            try
+            {
+                return await _context.FacturasEF.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("No se pudo listar Factura", ex);
+            }
         }
     }
 }

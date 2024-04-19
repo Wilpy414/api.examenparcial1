@@ -1,97 +1,83 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Dapper;
-using Npgsql;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Repository.Data
 {
     public class ClienteRepository : ICliente
     {
-        private IDbConnection conexionDB;
-        public ClienteRepository(string _connectionString)
+        private readonly ApplicationDbContext _context;
+
+        public ClienteRepository(ApplicationDbContext context)
         {
-            conexionDB = new DbConnection(_connectionString).dbConnection();
+            _context = context;
         }
-        public bool add(ClienteModel cliente)
+
+        public async Task<bool> add(ClienteModel cliente)
         {
             try
             {
-                if (conexionDB.Execute("insert into cliente(id, id_banco, nombre, apellido, " +
-                    "documento, direccion, mail, celular, estado) values (@id, @id_banco, @nombre, " +
-                    "@apellido, @documento, @direccion, @mail, @celular, @estado)", cliente) > 0)
-                    return true;
-                else
-                    return false;
+                await _context.ClientesEF.AddAsync(cliente);
+                return await _context.SaveChangesAsync() > 0;
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw new Exception("No se pudo agregar Cliente", ex);
             }
         }
 
-        public ClienteModel get(int id)
+        public async Task<bool> update(ClienteModel cliente)
         {
             try
             {
-                return conexionDB.Query<ClienteModel>("Select * from cliente where id = @id", new {id}).FirstOrDefault();
+                _context.ClientesEF.Update(cliente);
+                return await _context.SaveChangesAsync() > 0;
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw new Exception("No se pudo actualizar Cliente", ex);
             }
         }
 
-        public IEnumerable<ClienteModel> list()
+        public async Task<bool> remove(int id)
         {
             try
             {
-                return conexionDB.Query<ClienteModel>("Select * from cliente");
+                var cliente = await _context.ClientesEF.FindAsync(id);
+                if (cliente != null)
+                {
+                    _context.ClientesEF.Remove(cliente);
+                    return await _context.SaveChangesAsync() > 0;
+                }
+                return false;
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw new Exception("No se pudo eliminar Cliente", ex);
             }
+
         }
 
-        public bool remove(int id)
+        public async Task<ClienteModel> get(int id)
         {
             try
             {
-                if (conexionDB.Execute("Delete from cliente where id = @id", new {id}) > 0)
-                    return true;
-                else
-                    return false;
+                return await _context.ClientesEF.FindAsync(id);
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw new Exception("No se pudo obtener Cliente", ex);
             }
         }
 
-        public bool update(ClienteModel cliente, int id)
+        public async Task<IEnumerable<ClienteModel>> list()
         {
             try
             {
-                if (conexionDB.Execute("Update cliente set id_banco = @id_banco, nombre = @nombre, " +
-                    "apellido = @apellido, documento= @documento, direccion = @direccion, mail = @mail, celular = @celular, estado = @estado" +
-                    " where id = @id", cliente) > 0)
-                    return true;
-                else
-                    return false;
+                return await _context.ClientesEF.ToListAsync();
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw new Exception("No se pudo listar Cliente", ex);
             }
-        }
-
-        public bool update(ClienteModel cliente)
-        {
-            throw new NotImplementedException();
-        }
+        }      
     }
 }

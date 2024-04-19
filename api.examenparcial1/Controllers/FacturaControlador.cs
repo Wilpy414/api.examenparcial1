@@ -1,97 +1,102 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Repository.Data;
+using Services.Servicios;
 
 namespace api.examenparcial1.Controllers
 {
+    [ApiController]
+    [Route("[controller]")]
+
     public class FacturaControlador : Controller
     {
-        private IConfiguration configuration;
-        private FacturaRepository facturaRepository;
+        private readonly IConfiguration _configuration;
+        private readonly FacturaService _facturaService;
 
-        /*public FacturaController()*/
-        public FacturaControlador(IConfiguration configuration)
+        public FacturaControlador(IConfiguration configuration, FacturaService facturaService)
         {
-            this.configuration = configuration;
-            this.facturaRepository = new FacturaRepository(configuration.GetConnectionString("postgresDB"));
+            _configuration = configuration;
+            _facturaService = facturaService;
         }
-        // Generate crud controller
-        [HttpPost]
-        [Route("agregar")]
-        public IActionResult add(FacturaModel factura)
+
+        [HttpPost("Agregar")]
+        public async Task<IActionResult> Add(FacturaModel factura)
         {
             try
             {
-                if (facturaRepository.add(factura))
+                if (await _facturaService.Add(factura))
                     return Ok("Factura agregada correctamente");
                 else
-                    return BadRequest("Error al agregar cliente");
+                    return BadRequest("No se pudo agregar Factura");
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
-        [HttpPut]
-        [Route("modificar")]
-        public IActionResult update(FacturaModel factura)
+
+        [HttpPut("Modificar")]
+        public async Task<IActionResult> Update(FacturaModel factura)
         {
             try
             {
-                if (facturaRepository.update(factura))
+                if (await _facturaService.Update(factura))
                     return Ok("Factura actualizada correctamente");
                 else
-                    return BadRequest("Error al actualizar cliente");
+                    return BadRequest("No se pudo actualizar Factura");
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpDelete]
-        [Route("eliminar")]
-        public IActionResult remove(int id)
+        [Route("Eliminar/{id}")]
+
+        public async Task<IActionResult> Remove(int id)
         {
             try
             {
-                if (facturaRepository.remove(id))
+                if (await _facturaService.Remove(id))
                     return Ok("Factura eliminada correctamente");
                 else
-                    return BadRequest("Error al eliminar cliente");
+                    return BadRequest("No se pudo eliminar Factura");
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpGet]
-        [Route("consultar/{id}")]
-        public IActionResult get(int id)
+        [Route("Consultar/{id}")]
+        public async Task<IActionResult> Get(int id)
         {
             try
             {
-                var factura = facturaRepository.get(id);
+                var factura = await _facturaService.Get(id);
                 if (factura != null)
                     return Ok(factura);
                 else
-                    return BadRequest("Factura no encontrada");
+                    return NotFound("Factura no encontrada");
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpGet]
-        [Route("lista")]
-        public IActionResult list()
+        [Route("Lista")]
+        public async Task<IActionResult> List()
         {
             try
             {
-                var facturas = facturaRepository.list();
-                if (facturas != null)
-                    return Ok(facturas);
+                var factura = await _facturaService.List();
+                if (factura != null)
+                    return Ok(factura);
                 else
-                    return BadRequest("No hay facturas registradas");
+                    return NoContent();
             }
             catch (Exception ex)
             {
