@@ -26,7 +26,7 @@ namespace api.examenparcial1.Controllers
                 if (await _facturaService.Add(factura))
                     return Ok("Factura agregada correctamente");
                 else
-                    return BadRequest("No se pudo agregar Factura");
+                    return BadRequest("Error al agregar cliente");
             }
             catch (Exception ex)
             {
@@ -42,7 +42,7 @@ namespace api.examenparcial1.Controllers
                 if (await _facturaService.Update(factura))
                     return Ok("Factura actualizada correctamente");
                 else
-                    return BadRequest("No se pudo actualizar Factura");
+                    return BadRequest("Error al actualizar factura");
             }
             catch (Exception ex)
             {
@@ -60,7 +60,7 @@ namespace api.examenparcial1.Controllers
                 if (await _facturaService.Remove(id))
                     return Ok("Factura eliminada correctamente");
                 else
-                    return BadRequest("No se pudo eliminar Factura");
+                    return BadRequest("Error al eliminar cliente");
             }
             catch (Exception ex)
             {
